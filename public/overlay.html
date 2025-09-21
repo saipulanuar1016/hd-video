@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tambahkan Judul ke Video</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: #f0f2f5;
+        margin: 0;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      .container {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+        text-align: center;
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 1rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+        text-align: left;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #555;
+        font-weight: bold;
+      }
+
+      input[type="file"],
+      input[type="text"],
+      button {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+
+      input[type="file"] {
+        padding: 0.5rem;
+      }
+
+      button {
+        border: none;
+        background-color: #007bff;
+        color: white;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      #status {
+        margin-top: 1rem;
+        font-weight: bold;
+      }
+
+      #result {
+        margin-top: 1.5rem;
+      }
+
+      video {
+        max-width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Tambahkan Judul ke Video</h1>
+      <form id="overlayForm">
+        <div class="form-group">
+          <label for="videoFile">Pilih Video:</label>
+          <input
+            type="file"
+            id="videoFile"
+            name="video"
+            accept="video/*"
+            required
+          />
+        </div>
+        <div class="form-group">
+          <label for="titleText">Judul Video:</label>
+          <input
+            type="text"
+            id="titleText"
+            name="title"
+            placeholder="Masukkan judul..."
+            required
+          />
+        </div>
+        <button type="submit">Proses Video</button>
+      </form>
+
+      <div id="status"></div>
+      <div id="result"></div>
+    </div>
+
+    <script>
+      const form = document.getElementById("overlayForm");
+      const statusDiv = document.getElementById("status");
+      const resultDiv = document.getElementById("result");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const videoFile = document.getElementById("videoFile").files[0];
+        const titleText = document.getElementById("titleText").value;
+
+        // Pastikan kedua input terisi sebelum mengirim
+        if (!videoFile || !titleText) {
+          statusDiv.textContent = "Mohon unggah video dan berikan judul.";
+          statusDiv.style.color = "red";
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("video", videoFile);
+        formData.append("title", titleText);
+
+        statusDiv.textContent = "Video sedang diproses...";
+        statusDiv.style.color = "#007bff";
+        resultDiv.innerHTML = ""; // Kosongkan hasil sebelumnya
+
+        try {
+          // Kirim data formulir ke endpoint /api/addtitle
+          const response = await fetch("/api/addtitle", {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            statusDiv.textContent = "Berhasil! Video telah diproses.";
+            statusDiv.style.color = "green";
+            resultDiv.innerHTML = `<p>Video hasil:</p><video controls src="${data.url}"></video>`;
+          } else {
+            statusDiv.textContent = `Error: ${
+              data.error || "Terjadi kesalahan pada server."
+            }`;
+            statusDiv.style.color = "red";
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          statusDiv.textContent = "Terjadi kesalahan saat mengirim permintaan.";
+          statusDiv.style.color = "red";
+        }
+      });
+    </script>
+  </body>
+</html>

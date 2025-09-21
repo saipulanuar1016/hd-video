@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  upscaler:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./uploads:/usr/src/app/uploads
+      - ./public:/usr/src/app/public
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
